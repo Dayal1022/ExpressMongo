@@ -1,41 +1,65 @@
-const asyncHandler = require('express-async-handler')
+const asyncHandler = require("express-async-handler");
+
+const Goal = require("../models/goalModel");
 // @desc Get goals
 //@route Get api/goals
 //@access Private
- 
+
 const getGoals = asyncHandler(async (req, res) => {
-    
-    res.status(200).json({message: 'Get goals'})
-})
+  const goals = await Goal.find();
+
+  res.status(200).json(goals);
+});
 // @desc Set goal
 //@route Set api/goal
 //@access Private
- 
+
 const setGoal = asyncHandler(async (req, res) => {
-    if (!req.body.text){
-        res.status(400)
-        throw new Error('Please add a text field')
-    }
-    res.status(200).json({ message: "Set Goals", phone: 1234567890 });
-})
+  if (!req.body.text) {
+    res.status(400);
+    throw new Error("Please add a text field");
+  }
+
+  const goal = await Goal.create({
+    text: req.body.text,
+  });
+  res.status(200).json({ message: "Set Goals", phone: `${goal.text}` });
+});
 // @desc Update goal
 //@route Update api/goal
 //@access Private
- 
+
 const updateGoal = asyncHandler(async (req, res) => {
-     res.status(200).json({ message: "Update Goals", phone: `1234567890 ${req.params.id}` });
-})
+  const goal = await Goal.findById(req.params.id);
+  if(!goal){
+    res.status(400)
+    throw new Error('Goal not Found')
+  }
+
+  const updatedGoal =await Goal.findByIdAndUpdate(req.params.id, req.body, {new: true,})
+  res
+    .status(200)
+    .json(updatedGoal);
+});
 // @desc Get goals
 //@route Get api/goals
 //@access Private
- 
+
 const deleteGoal = asyncHandler(async (req, res) => {
-    res
+    const goal = await Goal.findById(req.params.id);
+  if(!goal){
+    res.status(400)
+    throw new Error('Goal not Found')
+  }
+  await goal.remove()
+  res
     .status(200)
-    .json({ message: "Delete Goals", phone: `1234567890 ${req.params.id}` });
-})
+    .json({id: req.params.id});
+});
 
-
-module.exports ={
-    getGoals,setGoal,updateGoal,deleteGoal
-}
+module.exports = {
+  getGoals,
+  setGoal,
+  updateGoal,
+  deleteGoal,
+};
